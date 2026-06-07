@@ -45,6 +45,12 @@ npx expo start
 Then press `i` (iOS simulator), `a` (Android emulator), or scan the QR code
 with the **Expo Go** app on your phone to run it on a real device.
 
+To preview it in a desktop browser instead (no phone or simulator needed):
+
+```bash
+npx expo start --web
+```
+
 ## Architecture
 
 ```
