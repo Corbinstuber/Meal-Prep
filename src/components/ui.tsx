@@ -9,7 +9,60 @@ import {
   View,
   ViewStyle,
 } from 'react-native';
-import { colors, font, radius, spacing } from '../theme';
+import { colors, font, radius, shadow, spacing } from '../theme';
+
+/** Colored circular emoji badge used as a recipe's visual identity. */
+export function EmojiBadge({
+  emoji,
+  bg,
+  size = 48,
+}: {
+  emoji: string;
+  bg: string;
+  size?: number;
+}) {
+  return (
+    <View
+      style={{
+        width: size,
+        height: size,
+        borderRadius: size / 2,
+        backgroundColor: bg,
+        alignItems: 'center',
+        justifyContent: 'center',
+      }}
+    >
+      <Text style={{ fontSize: size * 0.5 }}>{emoji}</Text>
+    </View>
+  );
+}
+
+/** Small pill label for diet/cuisine tags and metadata. */
+export function Tag({
+  label,
+  color = colors.muted,
+  bg = colors.bg,
+}: {
+  label: string;
+  color?: string;
+  bg?: string;
+}) {
+  return (
+    <View style={[styles.tag, { backgroundColor: bg }]}>
+      <Text style={[styles.tagText, { color }]}>{label}</Text>
+    </View>
+  );
+}
+
+/** Thin progress bar (e.g. shopping check-off progress). */
+export function ProgressBar({ value }: { value: number }) {
+  const pct = Math.max(0, Math.min(1, value));
+  return (
+    <View style={styles.progressTrack}>
+      <View style={[styles.progressFill, { width: `${pct * 100}%` }]} />
+    </View>
+  );
+}
 
 export function Card({
   children,
@@ -129,18 +182,38 @@ export function money(n: number): string {
 const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.card,
-    borderRadius: radius.md,
+    borderRadius: radius.lg,
     padding: spacing.lg,
     borderWidth: 1,
     borderColor: colors.border,
     marginBottom: spacing.md,
+    ...shadow.card,
   },
   button: {
-    paddingVertical: spacing.md,
+    paddingVertical: spacing.md + 2,
     paddingHorizontal: spacing.lg,
-    borderRadius: radius.md,
+    borderRadius: radius.pill,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  tag: {
+    paddingHorizontal: spacing.sm,
+    paddingVertical: 3,
+    borderRadius: radius.pill,
+    marginRight: 6,
+    marginTop: 6,
+  },
+  tagText: { fontSize: font.tiny, fontWeight: '700' },
+  progressTrack: {
+    height: 8,
+    borderRadius: radius.pill,
+    backgroundColor: colors.border,
+    overflow: 'hidden',
+  },
+  progressFill: {
+    height: '100%',
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
   },
   buttonText: { fontSize: font.body, fontWeight: '700' },
   label: {

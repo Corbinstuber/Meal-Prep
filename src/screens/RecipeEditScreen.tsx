@@ -13,11 +13,18 @@ import {
   TextInput,
   View,
 } from 'react-native';
-import { Button, Chip, Field } from '../components/ui';
+import { Button, Chip, EmojiBadge, Field } from '../components/ui';
 import { PickerModal } from '../components/PickerModal';
 import { useStore } from '../data/store';
+import { emojiFor, recipeAccent } from '../lib/recipeVisual';
 import { RootStackParamList } from '../navigation/types';
-import { RecipeIngredient, Unit } from '../types';
+import {
+  RECIPE_EMOJIS,
+  RECIPE_TAGS,
+  RecipeIngredient,
+  RecipeTag,
+  Unit,
+} from '../types';
 import { UNITS_BY_DIMENSION } from '../lib/units';
 import { colors, font, radius, spacing } from '../theme';
 
@@ -37,9 +44,21 @@ export default function RecipeEditScreen() {
 
   const [name, setName] = useState(existing?.name ?? '');
   const [servings, setServings] = useState(String(existing?.servings ?? 2));
+  const [prep, setPrep] = useState(existing?.prepMinutes ? String(existing.prepMinutes) : '');
   const [notes, setNotes] = useState(existing?.notes ?? '');
   const [items, setItems] = useState<RecipeIngredient[]>(existing?.items ?? []);
+  const [emoji, setEmoji] = useState<string | undefined>(existing?.emoji);
+  const [favorite, setFavorite] = useState(existing?.favorite ?? false);
+  const [tags, setTags] = useState<RecipeTag[]>(existing?.tags ?? []);
   const [pickerOpen, setPickerOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+
+  const accent = recipeAccent({ id: editingId ?? name });
+  const shownEmoji = emojiFor({ emoji, name });
+
+  function toggleTag(t: RecipeTag) {
+    setTags((prev) => (prev.includes(t) ? prev.filter((x) => x !== t) : [...prev, t]));
+  }
 
   const ingById = (id: string) => catalog.find((i) => i.id === id);
 
@@ -78,8 +97,12 @@ export default function RecipeEditScreen() {
     const payload = {
       name: name.trim(),
       servings: Math.max(1, parseInt(servings, 10) || 1),
+      prepMinutes: prep ? Math.max(0, parseInt(prep, 10) || 0) : undefined,
       notes: notes.trim() || undefined,
       items,
+      emoji,
+      favorite,
+      tags,
     };
     if (editingId) updateRecipe(editingId, payload);
     else addRecipe(payload);
@@ -106,13 +129,70 @@ export default function RecipeEditScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : undefined}
     >
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: 120 }}>
+        {/* Visual identity */}
+        <View style={styles.identityRow}>
+          <Pressable onPress={() => setEmojiOpen((v) => !v)}>
+            <EmojiBadge emoji={shownEmoji} bg={accent.bg} size={64} />
+            <View style={styles.emojiEdit}>
+              <Ionicons name="pencil" size={12} color="#fff" />
+            </View>
+          </Pressable>
+          <View style={{ flex: 1, marginLeft: spacing.lg }}>
+            <Text style={styles.identityHint}>Tap the icon to pick an emoji</Text>
+          </View>
+          <Pressable onPress={() => setFavorite((v) => !v)} hitSlop={10}>
+            <Ionicons
+              name={favorite ? 'star' : 'star-outline'}
+              size={28}
+              color={favorite ? colors.star : colors.faint}
+            />
+          </Pressable>
+        </View>
+
+        {emojiOpen ? (
+          <View style={styles.emojiGrid}>
+            {RECIPE_EMOJIS.map((e) => (
+              <Pressable
+                key={e}
+                onPress={() => {
+                  setEmoji(e);
+                  setEmojiOpen(false);
+                }}
+                style={[styles.emojiCell, emoji === e && styles.emojiCellActive]}
+              >
+                <Text style={{ fontSize: 24 }}>{e}</Text>
+              </Pressable>
+            ))}
+          </View>
+        ) : null}
+
         <Field label="Recipe name" value={name} onChangeText={setName} placeholder="e.g. Taco Night" />
-        <Field
-          label="Servings this recipe makes"
-          value={servings}
-          onChangeText={setServings}
-          keyboardType="number-pad"
-        />
+        <View style={{ flexDirection: 'row', gap: spacing.md }}>
+          <View style={{ flex: 1 }}>
+            <Field
+              label="Servings made"
+              value={servings}
+              onChangeText={setServings}
+              keyboardType="number-pad"
+            />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Field
+              label="Prep time (min)"
+              value={prep}
+              onChangeText={setPrep}
+              keyboardType="number-pad"
+              placeholder="optional"
+            />
+          </View>
+        </View>
+
+        <Text style={styles.fieldLabel}>Tags</Text>
+        <View style={styles.tagWrap}>
+          {RECIPE_TAGS.map((t) => (
+            <Chip key={t} label={t} selected={tags.includes(t)} onPress={() => toggleTag(t)} />
+          ))}
+        </View>
 
         <Text style={styles.section}>Ingredients</Text>
         <Text style={styles.hint}>
@@ -243,6 +323,50 @@ function QuantityInput({
 }
 
 const styles = StyleSheet.create({
+  identityRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: spacing.lg,
+  },
+  emojiEdit: {
+    position: 'absolute',
+    right: -2,
+    bottom: -2,
+    backgroundColor: colors.primary,
+    width: 22,
+    height: 22,
+    borderRadius: 11,
+    alignItems: 'center',
+    justifyContent: 'center',
+    borderWidth: 2,
+    borderColor: colors.bg,
+  },
+  identityHint: { fontSize: font.small, color: colors.muted },
+  emojiGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    backgroundColor: colors.card,
+    borderRadius: radius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.sm,
+    marginBottom: spacing.md,
+  },
+  emojiCell: {
+    width: 44,
+    height: 44,
+    borderRadius: radius.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  emojiCellActive: { backgroundColor: colors.primaryLight },
+  fieldLabel: {
+    fontSize: font.small,
+    color: colors.muted,
+    marginBottom: spacing.xs,
+    fontWeight: '600',
+  },
+  tagWrap: { flexDirection: 'row', flexWrap: 'wrap', marginBottom: spacing.sm },
   section: {
     fontSize: font.h3,
     fontWeight: '800',

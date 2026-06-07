@@ -9,7 +9,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Button, Chip, Empty, Field, money } from '../components/ui';
+import { Button, Chip, Empty, Field, ProgressBar, money } from '../components/ui';
 import { useStore } from '../data/store';
 import { buildGroceryList, groupByCategory } from '../features/groceryList';
 import {
@@ -62,6 +62,8 @@ export default function GroceryScreen() {
     () => lines.filter((l) => !checked[l.key]).reduce((s, l) => s + l.estCost, 0),
     [lines, checked]
   );
+
+  const checkedCount = lines.filter((l) => checked[l.key]).length;
 
   const groups = groupByCategory(lines);
 
@@ -155,6 +157,22 @@ export default function GroceryScreen() {
             ) : null}
           </View>
         </View>
+
+        {lines.length > 0 ? (
+          <View style={styles.progressCard}>
+            <View style={styles.progressHeader}>
+              <Text style={styles.progressTitle}>
+                {checkedCount === lines.length
+                  ? '🎉 All done!'
+                  : `${checkedCount} of ${lines.length} in the cart`}
+              </Text>
+              <Text style={styles.progressPct}>
+                {Math.round((checkedCount / lines.length) * 100)}%
+              </Text>
+            </View>
+            <ProgressBar value={lines.length ? checkedCount / lines.length : 0} />
+          </View>
+        ) : null}
 
         {lines.length === 0 ? (
           <Empty text="Nothing to buy for these dates. Plan some meals or add items by hand." />
@@ -392,6 +410,22 @@ const styles = StyleSheet.create({
   staplesToggle: { flexDirection: 'row', alignItems: 'center' },
   staplesText: { marginLeft: spacing.sm, fontSize: font.small, color: colors.text, fontWeight: '600' },
   mealCount: { fontSize: font.small, color: colors.muted },
+  progressCard: {
+    backgroundColor: colors.card,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    padding: spacing.md,
+    marginBottom: spacing.md,
+  },
+  progressHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: spacing.sm,
+  },
+  progressTitle: { fontSize: font.small, fontWeight: '800', color: colors.text },
+  progressPct: { fontSize: font.small, fontWeight: '800', color: colors.primary },
   controlsRight: { flexDirection: 'row', alignItems: 'center' },
   shareBtn: {
     flexDirection: 'row',

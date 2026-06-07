@@ -19,10 +19,18 @@ function Tabs() {
       screenOptions={({ route }) => ({
         headerStyle: { backgroundColor: colors.bg },
         headerShadowVisible: false,
-        headerTitleStyle: { fontWeight: '800', fontSize: 20 },
+        headerTitleStyle: { fontWeight: '800', fontSize: 22 },
+        headerTitleAlign: 'left',
         tabBarActiveTintColor: colors.primary,
-        tabBarInactiveTintColor: colors.muted,
-        tabBarStyle: { backgroundColor: colors.card, borderTopColor: colors.border },
+        tabBarInactiveTintColor: colors.faint,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '700' },
+        tabBarStyle: {
+          backgroundColor: colors.card,
+          borderTopColor: colors.border,
+          height: 88,
+          paddingTop: 8,
+          paddingBottom: 28,
+        },
         tabBarIcon: ({ color, size }) => {
           const icons: Record<keyof TabsParamList, keyof typeof Ionicons.glyphMap> = {
             Planner: 'calendar-outline',

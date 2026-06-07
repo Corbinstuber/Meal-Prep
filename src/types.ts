@@ -81,7 +81,43 @@ export interface Recipe {
   servings: number;
   notes?: string;
   items: RecipeIngredient[];
+  /** Emoji shown as the recipe's avatar (visual identity). */
+  emoji?: string;
+  /** Marked as a favorite. */
+  favorite?: boolean;
+  /** Approximate prep + cook time in minutes. */
+  prepMinutes?: number;
+  /** Diet / cuisine tags for filtering. */
+  tags?: RecipeTag[];
 }
+
+export type RecipeTag =
+  | 'Quick'
+  | 'Vegetarian'
+  | 'Vegan'
+  | 'High-protein'
+  | 'Low-carb'
+  | 'Gluten-free'
+  | 'Budget'
+  | 'Meal-prep';
+
+export const RECIPE_TAGS: RecipeTag[] = [
+  'Quick',
+  'Vegetarian',
+  'Vegan',
+  'High-protein',
+  'Low-carb',
+  'Gluten-free',
+  'Budget',
+  'Meal-prep',
+];
+
+export const RECIPE_EMOJIS: string[] = [
+  '🍽️', '🍚', '🍳', '🥗', '🍜', '🌮', '🍝', '🍲', '🥘', '🍔',
+  '🍕', '🥪', '🌯', '🍖', '🥩', '🍗', '🐟', '🍤', '🥦', '🥑',
+  '🍅', '🥕', '🧀', '🥞', '🧇', '🍣', '🍛', '🫕', '🥟', '🍱',
+];
+
 
 /** A meal assigned to a specific day + slot on the planner. */
 export interface MealPlanEntry {

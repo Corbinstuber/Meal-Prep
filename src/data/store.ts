@@ -20,6 +20,10 @@ function seedRecipes(): Recipe[] {
       name: 'Chicken Rice Bowl',
       servings: 2,
       notes: 'Quick weeknight dinner.',
+      emoji: '🍚',
+      favorite: true,
+      prepMinutes: 25,
+      tags: ['Quick', 'High-protein', 'Meal-prep'],
       items: [
         ri(find('Chicken Breast'), 300, 'g', false),
         ri(find('Rice'), 200, 'g', false),
@@ -33,6 +37,9 @@ function seedRecipes(): Recipe[] {
       id: 'recipe-sample-eggs',
       name: 'Scrambled Eggs & Toast',
       servings: 1,
+      emoji: '🍳',
+      prepMinutes: 10,
+      tags: ['Quick', 'Vegetarian'],
       items: [
         ri(find('Eggs'), 2, 'each', false),
         ri(find('Bread'), 2, 'each', false),
@@ -72,6 +79,7 @@ export interface AppState {
   updateRecipe: (id: string, patch: Partial<Recipe>) => void;
   removeRecipe: (id: string) => void;
   duplicateRecipe: (id: string) => Recipe | undefined;
+  toggleFavorite: (id: string) => void;
 
   // Meal plan
   addMeal: (date: string, slot: MealSlot, recipeId: string, servings?: number) => void;
@@ -139,6 +147,12 @@ export const useStore = create<AppState>()(
         set((s) => ({ recipes: [...s.recipes, copy] }));
         return copy;
       },
+      toggleFavorite: (id) =>
+        set((s) => ({
+          recipes: s.recipes.map((r) =>
+            r.id === id ? { ...r, favorite: !r.favorite } : r
+          ),
+        })),
 
       addMeal: (date, slot, recipeId, servings) => {
         const recipe = get().recipes.find((r) => r.id === recipeId);
