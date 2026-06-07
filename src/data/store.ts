@@ -71,6 +71,7 @@ export interface AppState {
   addRecipe: (recipe: Omit<Recipe, 'id'>) => Recipe;
   updateRecipe: (id: string, patch: Partial<Recipe>) => void;
   removeRecipe: (id: string) => void;
+  duplicateRecipe: (id: string) => Recipe | undefined;
 
   // Meal plan
   addMeal: (date: string, slot: MealSlot, recipeId: string, servings?: number) => void;
@@ -126,6 +127,18 @@ export const useStore = create<AppState>()(
           recipes: s.recipes.filter((r) => r.id !== id),
           plan: s.plan.filter((p) => p.recipeId !== id),
         })),
+      duplicateRecipe: (id) => {
+        const original = get().recipes.find((r) => r.id === id);
+        if (!original) return undefined;
+        const copy: Recipe = {
+          ...original,
+          id: uid('recipe'),
+          name: `${original.name} (copy)`,
+          items: original.items.map((it) => ({ ...it })),
+        };
+        set((s) => ({ recipes: [...s.recipes, copy] }));
+        return copy;
+      },
 
       addMeal: (date, slot, recipeId, servings) => {
         const recipe = get().recipes.find((r) => r.id === recipeId);

@@ -4,6 +4,7 @@ import {
   Modal,
   Pressable,
   ScrollView,
+  Share,
   StyleSheet,
   Text,
   View,
@@ -64,6 +65,27 @@ export default function GroceryScreen() {
 
   const groups = groupByCategory(lines);
 
+  async function shareList() {
+    if (!lines.length) return;
+    const s = fromKey(startKey);
+    const e = fromKey(endKey);
+    const out: string[] = [
+      `🛒 Grocery list — ${monthShort(s)} ${s.getDate()} to ${monthShort(e)} ${e.getDate()}`,
+    ];
+    for (const g of groups) {
+      out.push('', g.category.toUpperCase());
+      for (const l of g.lines) {
+        out.push(`• ${l.name} — ${formatQuantity(l.quantity, l.unit)}  (${money(l.estCost)})`);
+      }
+    }
+    out.push('', `Estimated total: ${money(total)}`);
+    try {
+      await Share.share({ message: out.join('\n') });
+    } catch {
+      // user dismissed the share sheet
+    }
+  }
+
   return (
     <View style={styles.container}>
       <ScrollView contentContainerStyle={{ padding: spacing.lg, paddingBottom: 140 }}>
@@ -121,9 +143,17 @@ export default function GroceryScreen() {
             />
             <Text style={styles.staplesText}>Include pantry staples</Text>
           </Pressable>
-          <Text style={styles.mealCount}>
-            {entries.length} meal{entries.length === 1 ? '' : 's'}
-          </Text>
+          <View style={styles.controlsRight}>
+            <Text style={styles.mealCount}>
+              {entries.length} meal{entries.length === 1 ? '' : 's'}
+            </Text>
+            {lines.length > 0 ? (
+              <Pressable style={styles.shareBtn} onPress={shareList} hitSlop={8}>
+                <Ionicons name="share-outline" size={18} color={colors.primary} />
+                <Text style={styles.shareText}>Share</Text>
+              </Pressable>
+            ) : null}
+          </View>
         </View>
 
         {lines.length === 0 ? (
@@ -362,6 +392,17 @@ const styles = StyleSheet.create({
   staplesToggle: { flexDirection: 'row', alignItems: 'center' },
   staplesText: { marginLeft: spacing.sm, fontSize: font.small, color: colors.text, fontWeight: '600' },
   mealCount: { fontSize: font.small, color: colors.muted },
+  controlsRight: { flexDirection: 'row', alignItems: 'center' },
+  shareBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginLeft: spacing.md,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs,
+    borderRadius: radius.sm,
+    backgroundColor: colors.primaryLight,
+  },
+  shareText: { color: colors.primary, fontWeight: '700', fontSize: font.small, marginLeft: 4 },
   catTitle: {
     fontSize: font.small,
     fontWeight: '800',

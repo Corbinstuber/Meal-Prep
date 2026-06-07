@@ -104,6 +104,7 @@ function AddMealModal({
   const recipes = useStore((s) => s.recipes);
   const addMeal = useStore((s) => s.addMeal);
   const [slot, setSlot] = useState<MealSlot>('Dinner');
+  const [servings, setServings] = useState(2);
 
   return (
     <Modal visible={!!dateKey} transparent animationType="slide" onRequestClose={onClose}>
@@ -123,6 +124,20 @@ function AddMealModal({
             ))}
           </View>
 
+          <Text style={styles.sheetLabel}>Servings to make</Text>
+          <View style={styles.servingsRow}>
+            <Pressable onPress={() => setServings((n) => Math.max(1, n - 1))} hitSlop={8}>
+              <Ionicons name="remove-circle-outline" size={30} color={colors.primary} />
+            </Pressable>
+            <Text style={styles.servingsValue}>{servings}</Text>
+            <Pressable onPress={() => setServings((n) => n + 1)} hitSlop={8}>
+              <Ionicons name="add-circle-outline" size={30} color={colors.primary} />
+            </Pressable>
+            <Text style={styles.servingsHint}>
+              scales the ingredients on your grocery list
+            </Text>
+          </View>
+
           <Text style={styles.sheetLabel}>Choose a recipe</Text>
           <ScrollView style={{ maxHeight: 320 }}>
             {recipes.length === 0 ? (
@@ -133,7 +148,8 @@ function AddMealModal({
                   key={r.id}
                   style={styles.recipeRow}
                   onPress={() => {
-                    if (dateKey) addMeal(dateKey, slot, r.id);
+                    if (dateKey) addMeal(dateKey, slot, r.id, servings);
+                    setServings(2);
                     onClose();
                   }}
                 >
@@ -219,6 +235,16 @@ const styles = StyleSheet.create({
     marginBottom: spacing.sm,
   },
   slotRow: { flexDirection: 'row', flexWrap: 'wrap' },
+  servingsRow: { flexDirection: 'row', alignItems: 'center' },
+  servingsValue: {
+    fontSize: font.h3,
+    fontWeight: '800',
+    color: colors.text,
+    marginHorizontal: spacing.md,
+    minWidth: 28,
+    textAlign: 'center',
+  },
+  servingsHint: { fontSize: font.tiny, color: colors.muted, marginLeft: spacing.md, flex: 1 },
   recipeRow: {
     paddingVertical: spacing.md,
     borderBottomWidth: 1,

@@ -33,6 +33,7 @@ export default function RecipeEditScreen() {
   const addRecipe = useStore((s) => s.addRecipe);
   const updateRecipe = useStore((s) => s.updateRecipe);
   const removeRecipe = useStore((s) => s.removeRecipe);
+  const duplicateRecipe = useStore((s) => s.duplicateRecipe);
 
   const [name, setName] = useState(existing?.name ?? '');
   const [servings, setServings] = useState(String(existing?.servings ?? 2));
@@ -181,6 +182,18 @@ export default function RecipeEditScreen() {
         <View style={{ marginTop: spacing.md }}>
           <Button title={editingId ? 'Save changes' : 'Create recipe'} onPress={save} />
         </View>
+        {editingId ? (
+          <View style={{ marginTop: spacing.sm }}>
+            <Button
+              title="Duplicate recipe"
+              variant="secondary"
+              onPress={() => {
+                const copy = duplicateRecipe(editingId);
+                if (copy) nav.replace('RecipeEdit', { recipeId: copy.id });
+              }}
+            />
+          </View>
+        ) : null}
         {editingId ? (
           <View style={{ marginTop: spacing.sm }}>
             <Button title="Delete recipe" variant="danger" onPress={confirmDelete} />
